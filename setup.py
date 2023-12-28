@@ -138,7 +138,7 @@ def generate_terraform_config(project_id, static_ip, credentials_path):
         EOSS
         
         # Create docker-compose.yml
-        cat <<EODC > /opt/docker-compose.yml
+        cat <<EODC > /opt/docker-compose.yml        
         version: '1'
         services:
           n8n:
@@ -149,11 +149,15 @@ def generate_terraform_config(project_id, static_ip, credentials_path):
               - N8N_HOST={n8n_hostname}
               - WEBHOOK_URL={webhook_url}
             restart: unless-stopped
+          volumes:
+            - n8n_data:/root/.n8n
           fastapi:
             image: {fastapi_docker_image}
             ports:
               - "8000:8000"
             restart: unless-stopped
+          volumes:
+            n8n_data:
         EODC
 
         # Create docker-compose service file
