@@ -68,3 +68,7 @@ Two scripts must be run on the server
 - **Managing Cloudflared Service**:
   - Start/Stop: `sudo systemctl start/stop cloudflared`
   - Check Status: `sudo systemctl status cloudflared`
+
+ ## Video Walkthrough
+ [![18 minute video demonstrating setup](http://img.youtube.com/vi/91-i_IIa8PQ/0.jpg)](http://www.youtube.com/watch?v=91-i_IIa8PQ "Video Title")
+
