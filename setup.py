@@ -146,13 +146,13 @@ def generate_terraform_config(project_id, static_ip, credentials_path):
             echo "    ports:" >> /opt/docker-compose.yml
             echo "      - \"5678:5678\"" >> /opt/docker-compose.yml
             echo "    environment:" >> /opt/docker-compose.yml
-            echo "      - N8N_HOST={n8n_hostname}" >> /opt/docker-compose.yml
-            echo "      - WEBHOOK_URL={webhook_url}" >> /opt/docker-compose.yml
+            echo "      - N8N_HOST=${n8n_hostname}" >> /opt/docker-compose.yml
+            echo "      - WEBHOOK_URL=${webhook_url}" >> /opt/docker-compose.yml
             echo "    restart: unless-stopped" >> /opt/docker-compose.yml
             echo "    volumes:" >> /opt/docker-compose.yml
             echo "      - n8n_data:/root/.n8n" >> /opt/docker-compose.yml
             echo "  fastapi:" >> /opt/docker-compose.yml
-            echo "    image: {fastapi_docker_image}" >> /opt/docker-compose.yml
+            echo "    image: ${fastapi_docker_image}" >> /opt/docker-compose.yml
             echo "    ports:" >> /opt/docker-compose.yml
             echo "      - \"8000:8000\"" >> /opt/docker-compose.yml
             echo "    restart: unless-stopped" >> /opt/docker-compose.yml
