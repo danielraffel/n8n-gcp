@@ -68,6 +68,18 @@ Two scripts must be run on the server
 - **Managing Cloudflared Service**:
   - Start/Stop: `sudo systemctl start/stop cloudflared`
   - Check Status: `sudo systemctl status cloudflared`
+- **Monitoring Docker**:
+  - After restarting, monitor the service and container status to ensure they are running as expected. Use `sudo systemctl status docker-compose.service` for the service and `sudo docker ps` to check the running containers.
+  - Check Logs for Further Errors: If the issue persists, check the logs again for any additional errors. Use sudo journalctl -u docker-compose.service to review the service logs and sudo docker logs [container_id] for container logs.
+  - Review Restart Policy: The container's exit code 0 suggests it exited cleanly. Review the restart policy in the Docker Compose file to ensure it aligns with your desired behavior. A policy like restart: unless-stopped might be appropriate.
+  - Docker Compose File: If you need to review the docker-compose.yml file it's located at `/opt/docker-compose.yml`.
+  - Verify the service is running correctly
+  ```
+  sudo systemctl status docker-compose.service
+  sudo docker ps
+  ```
+
+
 
  ## Video Walkthrough
  [![18 minute video demonstrating setup](http://img.youtube.com/vi/91-i_IIa8PQ/0.jpg)](http://www.youtube.com/watch?v=91-i_IIa8PQ "Video Title")
