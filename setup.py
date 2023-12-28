@@ -117,7 +117,7 @@ def generate_terraform_config(project_id, static_ip, credentials_path):
             }}
         }}
 
-        # Create setup server script to install Docker, n8n and FastAPI
+        # Create setup server script to install docker, n8n and fastAPI
         metadata_startup_script = <<-EOT
         cat <<EOSS > /opt/setup_server.sh
         #!/bin/bash
@@ -137,28 +137,28 @@ def generate_terraform_config(project_id, static_ip, credentials_path):
         /usr/local/bin/docker-compose --version
         EOSS
         
-        # Create docker-compose.yml
-        cat <<EODC > /opt/docker-compose.yml        
-        version: '1'
-        services:
-          n8n:
-            image: n8nio/n8n
-            ports:
-              - "5678:5678"
-            environment:
-              - N8N_HOST={n8n_hostname}
-              - WEBHOOK_URL={webhook_url}
-            restart: unless-stopped
-          volumes:
-            - n8n_data:/root/.n8n
-          fastapi:
-            image: {fastapi_docker_image}
-            ports:
-              - "8000:8000"
-            restart: unless-stopped
-          volumes:
-            n8n_data:
-        EODC
+        # Check if docker-compose.yml already exists
+        if [ ! -f /opt/docker-compose.yml ]; then
+            echo "version: '1'" > /opt/docker-compose.yml
+            echo "services:" >> /opt/docker-compose.yml
+            echo "  n8n:" >> /opt/docker-compose.yml
+            echo "    image: n8nio/n8n" >> /opt/docker-compose.yml
+            echo "    ports:" >> /opt/docker-compose.yml
+            echo "      - \"5678:5678\"" >> /opt/docker-compose.yml
+            echo "    environment:" >> /opt/docker-compose.yml
+            echo "      - N8N_HOST={n8n_hostname}" >> /opt/docker-compose.yml
+            echo "      - WEBHOOK_URL={webhook_url}" >> /opt/docker-compose.yml
+            echo "    restart: unless-stopped" >> /opt/docker-compose.yml
+            echo "    volumes:" >> /opt/docker-compose.yml
+            echo "      - n8n_data:/root/.n8n" >> /opt/docker-compose.yml
+            echo "  fastapi:" >> /opt/docker-compose.yml
+            echo "    image: {fastapi_docker_image}" >> /opt/docker-compose.yml
+            echo "    ports:" >> /opt/docker-compose.yml
+            echo "      - \"8000:8000\"" >> /opt/docker-compose.yml
+            echo "    restart: unless-stopped" >> /opt/docker-compose.yml
+            echo "volumes:" >> /opt/docker-compose.yml
+            echo "  n8n_data:" >> /opt/docker-compose.yml
+        fi
 
         # Create docker-compose service file
         cat <<EDCS > /etc/systemd/system/docker-compose.service
