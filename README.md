@@ -31,7 +31,7 @@ Two scripts must be run on the server
 ## Usage
 It will take around 20 minutes to configure the server. Most of the time takes place in step 3 where the scripts are downloading files.
 
-### Step 1: Modify Global Variables in the Python Script:
+### Step 1: Personalize Global Variables in the Python Script:
 - `n8n_hostname`: Required. Set this to your domain (e.g., `n8n.yourdomain.com`).
 - `webhook_url`: Optional. Set this to your webhook URL. (will default to your n8n_hostname)
 - `fastapi_docker_image`: Optional. Choose the FastAPI Docker image version if you prefer a diff version.
@@ -41,16 +41,24 @@ It will take around 20 minutes to configure the server. Most of the time takes p
 - `ssh_user` = Required. ssh key username.
 
 ### Step 2: Deployment Steps:
-1. Clone the GitHub repository.
-2. Navigate to the local directory in the terminal.
-3. Run the setup script with `python setup.sh`.
-4. Initialize Terraform with `terraform init`.
-5. Apply Terraform configuration with `terraform apply`. When prompted, type `yes`.
+1. Clone the GitHub repository
+`https://github.com/danielraffel/n8n-gcp.git`
+3. Navigate to the local directory in the terminal
+`cd n8n-gcp`
+4. Run the setup script in a terminal
+`python setup.sh`
+5. Initialize Terraform
+`terraform init`
+6. Apply Terraform configuration
+`terraform apply`
+When prompted to deploy, type `yes`.
 
 ### Step 3: Post-Deployment:
-- SSH into your server: `ssh -i ~/.ssh/gcp USERNAME@X.X.X.X`
-- Run setup scripts on the server:
+7. SSH into your server in a terminal:
+`ssh -i ~/.ssh/gcp USERNAME@X.X.X.X`
+8. Install setup scripts on the server (to install and configure Docker, n8n, FastAPI, etc):
   - `sudo sh /opt/setup_server.sh`
+9. Install Cloudflare setup scripts on the server to get SSL:
   - `sudo sh /opt/setup_cloudflare.sh`
   - Follow the instructions to set up the Cloudflare tunnel. When prompted, copy/paste the URL in a browser and then select the domain you want to tunnel and authorize it. The cert will be downloaded to the server and your DNS name will be updated with the tunnelID.
 
