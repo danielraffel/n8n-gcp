@@ -28,22 +28,23 @@ Two scripts must be run on the server
 - Domain with Cloudflare DNS: [Sign up and host a domain](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/) to be able to configure [Cloudflare tunnel](https://www.cloudflare.com/products/tunnel/).
 
 ## Usage
+It will take around 20 minutes to configure the server. Most of the time takes place in step 3 where the scripts are downloading files.
 
-### Modify Global Variables in Python Script:
-- `n8n_hostname`: Set this to your domain (e.g., `n8n.yourdomain.com`).
-- `webhook_url`: Set this to your webhook URL.
-- `fastapi_docker_image`: Choose the FastAPI Docker image version.
-- `region`: Default is `us-west1`; adjust if needed. Note: if you change this review the python script for the Zone to confirm you want to be in "-a"
-- `ssh_key`: Add your SSH key.
+### Step 1: Modify Global Variables in the Python Script:
+- `n8n_hostname`: Required. Set this to your domain (e.g., `n8n.yourdomain.com`).
+- `webhook_url`: Optional. Set this to your webhook URL. (will default to your n8n_hostname)
+- `fastapi_docker_image`: Optional. Choose the FastAPI Docker image version if you prefer a diff version.
+- `region`: Optional. Default is `us-west1`; adjust if needed. Note: if you change this review the python script for the Zone to confirm you want to be in "-a"
+- `ssh_key`: Required. Add your SSH key.
 
-### Deployment Steps:
+### Step 2: Deployment Steps:
 1. Clone the GitHub repository.
 2. Navigate to the local directory in the terminal.
 3. Run the setup script with `python setup.sh`.
 4. Initialize Terraform with `terraform init`.
 5. Apply Terraform configuration with `terraform apply`. When prompted, type `yes`.
 
-### Post-Deployment:
+### Step 3: Post-Deployment:
 - SSH into your server: `ssh -i ~/.ssh/gcp USERNAME@X.X.X.X`
 - Run setup scripts on the server:
   - `sudo sh /opt/setup_server.sh`
