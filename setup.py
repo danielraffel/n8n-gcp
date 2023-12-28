@@ -129,6 +129,12 @@ def generate_terraform_config(project_id, static_ip, credentials_path):
         docker run -d -p 8000:8000 {fastapi_docker_image}
         docker pull n8nio/n8n
         docker run -d -p 5678:5678 --env N8N_HOST="{n8n_hostname}" --env WEBHOOK_URL="https://{n8n_hostname}/" n8nio/n8n
+        # Install Docker Compose
+        sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.3/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        # Verify installation
+        echo "Docker Compose version:"
+        /usr/local/bin/docker-compose --version
         EOSS
         
         # Create docker-compose.yml
