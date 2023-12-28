@@ -1,7 +1,7 @@
-# README.md for automating setting up n8n on Google Cloud
+# Automating Setting up n8n, FastAPI & Cloudflare Tunnel on Google Cloud
 
 ## Overview
-This project contains a Python script designed to automate the setup of a free-tier Google Cloud Platform (GCP) ec2 micro-instance with n8n, FastAPI, and a Cloudflare tunnel. The script uses Terraform to provision infrastructure on GCP. It automates several tasks, including generating a service account key, setting up a static IP, and configuring firewall rules.
+This project contains a Python script designed to automate the setup of a free-tier Google Cloud Platform (GCP) [e2 micro-instance](https://cloud.google.com/free/docs/free-cloud-features#compute) with [n8n](https://n8n.io), [FastAPI](https://fastapi.tiangolo.com), and a [Cloudflare tunnel](https://www.cloudflare.com/products/tunnel/). The script uses Terraform to provision infrastructure on GCP. It automates several tasks, including generating a service account key, setting up a static IP, and configuring firewall rules.
 
 ### What the Python Script Does:
 1. **Project ID Retrieval**: Fetches your GCP project ID using the Google Cloud CLI.
@@ -11,7 +11,7 @@ This project contains a Python script designed to automate the setup of a free-t
 
 ### What the Terraform File Deploys:
 The Terraform configuration (`setup.tf`) provisions the following on GCP:
-- A new GCP instance with specified configurations ec2 machine type, 60gb boot disk, and standard static IP network interfaces.
+- A new GCP instance with specified configurations e2 machine type, 60gb boot disk, and standard static IP network interfaces.
 - A static IP address, ensuring the instance is accessible at a consistent IP.
 - Optionally, a firewall rule to allow traffic on port 5678, needed for n8n.
 
@@ -51,7 +51,7 @@ Two scripts must be run on the server
   - Follow the instructions to set up the Cloudflare tunnel. When prompted, copy/paste the URL in a browser and then select the domain you want to tunnel and authorize it. The cert will be downloaded to the server and your DNS name will be updated with the tunnelID.
 
 ## Cost Considerations
-- The EC2 micro instance is under GCP's always-free tier, implying no cost for 24/7 operation. However, always verify with Google's latest policies. Cloudflare Tunnel, FastAPI, n8N are also free to use but verify with their latest policies.
+- The E2 micro instance is under GCP's always-free tier, implying no cost for 24/7 operation. However, always verify with Google's latest policies. Cloudflare Tunnel, FastAPI, n8N are also free to use but verify with their latest policies.
 
 ## SSL Setup
 - This script configures SSL using a Cloudflare tunnel.
