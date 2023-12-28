@@ -270,7 +270,7 @@ services:
     restart: unless-stopped
     volumes:
       - n8n_data:/home/node/.n8n
-      - /home/daniel_raffel/n8n-local-files:/files
+      - /home/{ssh_user}/n8n-local-files:/files
   fastapi:
     image: {fastapi_docker_image}
     ports:
