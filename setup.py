@@ -278,7 +278,7 @@ services:
     restart: unless-stopped
 volumes:
   n8n_data:
-""".format(fastapi_docker_image=fastapi_docker_image, n8n_hostname=n8n_hostname, webhook_url=webhook_url))
+""".format(ssh_user=ssh_user, fastapi_docker_image=fastapi_docker_image, n8n_hostname=n8n_hostname, webhook_url=webhook_url))
 
 # Create docker-compose.service
 create_file("docker-compose.service", """
