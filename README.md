@@ -87,10 +87,11 @@ It will take around 20 minutes to configure the server. Most of the time takes p
  [![18 minute video demonstrating setup](http://img.youtube.com/vi/91-i_IIa8PQ/0.jpg)](http://www.youtube.com/watch?v=91-i_IIa8PQ "Video Title")
 
 ## How to Delete What This Script Creates
-- On Google Cloud
+On Google Cloud
 1. [Firewall Policy](https://console.cloud.google.com/net-security/firewall-manager/firewall-policies) : A Firewall policy is created on port 5678. This can be deleted via the Firewall Policies section in GCP.
 2. [VM](https://console.cloud.google.com/compute/instances): A Virtual Machine (VM) is created. This can be deleted via the VM Instances section in GCP.
 3. [Standard Static IP](https://console.cloud.google.com/networking/addresses): A standard static IP is created. This should be released via the External IP addresses section in GCP.
-- On [Cloudflare](https://cloudflare.com)
+
+On [Cloudflare](https://cloudflare.com)
 1. Tunnel: A tunnel is created which can be deleted by navigating to Zero Trust > Access > Tunnels in the Cloudflare Dashboard (login required).
 2. Subdomain with Tunnel: A subdomain is created on your chosen domain with a tunnel. This can be deleted by going to your domain's DNS settings at Choose your domain > DNS in the Cloudflare Dashboard (login required) and looking for the CNAME on your Domain.
