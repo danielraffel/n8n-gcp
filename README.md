@@ -1,4 +1,4 @@
-# Automating Setting up n8n, FastAPI & Cloudflare Tunnel on Google Cloud
+# Automated Configuration of n8n, FastAPI & Cloudflare Tunnel on E2 Free Tier Google Cloud
 
 ## Overview
 This project contains a Python script designed to automate the setup of a free-tier Google Cloud Platform (GCP) [e2 micro-instance](https://cloud.google.com/free/docs/free-cloud-features#compute) with [n8n](https://n8n.io), [FastAPI](https://fastapi.tiangolo.com), and a [Cloudflare tunnel](https://www.cloudflare.com/products/tunnel/). The script uses Terraform to provision infrastructure on GCP. It automates several tasks, including generating a service account key, setting up a static IP, and configuring firewall rules.
