@@ -8,12 +8,13 @@ This project contains a Python script designed to automate the setup of a free-t
 2. **Service Account Key Generation**: Creates and downloads a service account key for the default service account.
 3. **Static IP Check/Create**: Checks for an existing static IP or creates a new one.
 4. **Terraform Config Generation**: Creates a Terraform configuration file (`setup.tf`) to set up a GCP instance with necessary configurations.
+5. **Generates Scripts and Configuration Files**: setup_server.sh, setup_cloudflare.sh, docker-compose.yml, and docker-compose.service
 
 ### What the Terraform File Deploys:
 The Terraform configuration (`setup.tf`) provisions the following on GCP:
 - A new GCP instance with specified configurations e2 machine type, 60gb boot disk, and standard static IP network interfaces.
-- A static IP address, ensuring the instance is accessible at a consistent IP.
-- Optionally, a firewall rule to allow traffic on port 5678, needed for n8n.
+- Uploads files to the server: /opt/setup_server.sh, /opt/setup_cloudflare.sh, /opt/docker-compose.yml, and /etc/systemd/system/docker-compose.service
+- A firewall rule to allow traffic on port 5678, needed for n8n (but since most will use Cloudflare Tunnel probably unneccessary.)
 
 ### Server Setup Scripts:
 Two scripts must be run on the server
@@ -36,6 +37,8 @@ It will take around 20 minutes to configure the server. Most of the time takes p
 - `fastapi_docker_image`: Optional. Choose the FastAPI Docker image version if you prefer a diff version.
 - `region`: Optional. Default is `us-west1`; adjust if needed. Note: if you change this review the python script for the Zone to confirm you want to be in "-a"
 - `ssh_key`: Required. Add your SSH key.
+- `ssh_private_key_path`: Required. Path to local private key "/Users/username/.ssh/gcp"
+- `ssh_user` = Required. ssh key username.
 
 ### Step 2: Deployment Steps:
 1. Clone the GitHub repository.
@@ -80,13 +83,10 @@ It will take around 20 minutes to configure the server. Most of the time takes p
   sudo docker ps
   ```
 
-
-
  ## Video Walkthrough
  [![18 minute video demonstrating setup](http://img.youtube.com/vi/91-i_IIa8PQ/0.jpg)](http://www.youtube.com/watch?v=91-i_IIa8PQ "Video Title")
 
 ## How to Delete What This Script Creates
-
 - On Google Cloud
 1. [Firewall Policy](https://console.cloud.google.com/net-security/firewall-manager/firewall-policies) : A Firewall policy is created on port 5678. This can be deleted via the Firewall Policies section in GCP.
 2. [VM](https://console.cloud.google.com/compute/instances): A Virtual Machine (VM) is created. This can be deleted via the VM Instances section in GCP.
