@@ -103,8 +103,3 @@ On Google Cloud
 On [Cloudflare](https://cloudflare.com)
 1. Tunnel: A tunnel is created which can be deleted by navigating to Zero Trust > Access > Tunnels in the Cloudflare Dashboard (login required).
 2. Subdomain with Tunnel: A subdomain is created on your chosen domain with a tunnel. This can be deleted by going to your domain's DNS settings at Choose your domain > DNS in the Cloudflare Dashboard (login required) and looking for the CNAME on your Domain.
-
-## Known Issues
-These might both be related to docker-compose implementations will investigate
-1. On reboot Docker and containers (n8n and FastAPI) are not auto-starting correctly
-2. On reboot n8n seems to wipe the data (it's got access to 60gb of persistent data need to figure out what's up) 
