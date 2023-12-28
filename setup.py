@@ -212,16 +212,22 @@ apt -y install docker.io apache2 wget
 systemctl start docker
 systemctl enable docker
 docker pull {fastapi_docker_image}
-docker run -d -p 8000:8000 {fastapi_docker_image}
 docker pull n8nio/n8n
-docker run -d -p 5678:5678 --env N8N_HOST="{n8n_hostname}" --env WEBHOOK_URL="{webhook_url}" n8nio/n8n
 # Install Docker Compose
 sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.3/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 # Verify installation
 echo "Docker Compose version:"
 /usr/local/bin/docker-compose --version
-""".format(fastapi_docker_image=fastapi_docker_image, n8n_hostname=n8n_hostname, webhook_url=webhook_url))
+cd /opt
+sudo /usr/local/bin/docker-compose up -d
+systemctl enable docker-compose.service
+# Create n8n volume directory
+sudo mkdir -p /home/{ssh_user}/n8n-local-files
+# Create Data Folders and Docker Volumes
+sudo docker volume create n8n_data
+sudo mkdir -p /home/{ssh_user}/n8n-local-files
+""".format(fastapi_docker_image=fastapi_docker_image, n8n_hostname=n8n_hostname, webhook_url=webhook_url, ssh_user=ssh_user))
 
 create_file("setup_cloudflare.sh", """
 #!/bin/bash
@@ -236,7 +242,7 @@ sudo cloudflared tunnel route dns {formatted_hostname} {n8n_hostname}
 tunnel_id=$(sudo cloudflared tunnel info {formatted_hostname} | grep -oP 'Your tunnel \K([a-z0-9-]+)')
 mkdir /etc/cloudflared
 echo "tunnel: {formatted_hostname}" > /etc/cloudflared/config.yml
-echo "credentials-file: /root/.cloudflared/${tunnel_id}.json" >> /etc/cloudflared/config.yml
+echo "credentials-file: /root/.cloudflared/$tunnel_id.json" >> /etc/cloudflared/config.yml
 echo "protocol: quic" >> /etc/cloudflared/config.yml
 echo "logfile: /var/log/cloudflared.log" >> /etc/cloudflared/config.yml
 echo "loglevel: debug" >> /etc/cloudflared/config.yml
@@ -263,7 +269,8 @@ services:
       - WEBHOOK_URL={webhook_url}
     restart: unless-stopped
     volumes:
-      - n8n_data:/root/.n8n
+      - n8n_data:/home/node/.n8n
+      - /home/daniel_raffel/n8n-local-files:/files
   fastapi:
     image: {fastapi_docker_image}
     ports:
