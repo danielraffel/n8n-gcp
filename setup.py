@@ -233,10 +233,10 @@ sudo cloudflared tunnel login
 sudo cloudflared tunnel create {formatted_hostname}
 sudo cloudflared tunnel route ip add {static_ip}/32 {formatted_hostname}
 sudo cloudflared tunnel route dns {formatted_hostname} {n8n_hostname}
-tunnel_id=\$(sudo cloudflared tunnel info {formatted_hostname} | grep -oP 'Your tunnel \K([a-z0-9-]+)')
+tunnel_id=$(sudo cloudflared tunnel info {formatted_hostname} | grep -oP 'Your tunnel \K([a-z0-9-]+)')
 mkdir /etc/cloudflared
 echo "tunnel: {formatted_hostname}" > /etc/cloudflared/config.yml
-echo "credentials-file: /root/.cloudflared/\$tunnel_id.json" >> /etc/cloudflared/config.yml
+echo "credentials-file: /root/.cloudflared/${tunnel_id}.json" >> /etc/cloudflared/config.yml
 echo "protocol: quic" >> /etc/cloudflared/config.yml
 echo "logfile: /var/log/cloudflared.log" >> /etc/cloudflared/config.yml
 echo "loglevel: debug" >> /etc/cloudflared/config.yml
