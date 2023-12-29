@@ -38,7 +38,7 @@ It will take around 20 minutes to configure the server. Most of the time takes p
 - `region`: Optional. Default is `us-west1`; adjust if needed. Note: if you change this review the python script for the Zone to confirm you want to be in "-a"
 - `ssh_key`: Required. Add your SSH key.
 - `ssh_private_key_path`: Required. Path to local private key "/Users/username/.ssh/gcp"
-- `ssh_user` = Required. ssh key username.
+- `ssh_user`: Required. ssh key username.
 
 ### Step 2: Deployment Steps:
 1. Clone the GitHub repository
