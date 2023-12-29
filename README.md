@@ -91,8 +91,8 @@ When prompted to deploy, type `yes`.
   sudo docker ps
   ```
 
- ## Video Walkthrough
- [![18 minute video demonstrating setup](http://img.youtube.com/vi/91-i_IIa8PQ/0.jpg)](http://www.youtube.com/watch?v=91-i_IIa8PQ "Video Title")
+## Video Walkthrough
+[![18 minute video demonstrating setup](http://img.youtube.com/vi/91-i_IIa8PQ/0.jpg)](http://www.youtube.com/watch?v=91-i_IIa8PQ "Video Title")
 
 ## How to Delete What This Script Creates
 On Google Cloud
@@ -103,3 +103,9 @@ On Google Cloud
 On [Cloudflare](https://cloudflare.com)
 1. Tunnel: A tunnel is created which can be deleted by navigating to Zero Trust > Access > Tunnels in the Cloudflare Dashboard (login required).
 2. Subdomain with Tunnel: A subdomain is created on your chosen domain with a tunnel. This can be deleted by going to your domain's DNS settings at Choose your domain > DNS in the Cloudflare Dashboard (login required) and looking for the CNAME on your Domain.
+
+## ToDo
+- Add a simple updater script to make it easy to update docker, docker-compose, n8n, etc
+- Comment out opening port 5678 (unnecessary with cloudflare tunnel)
+- Remove apache2 (don't need)
+- Further configure uvicorn-gunicorn-fastapi post installation
