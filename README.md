@@ -70,8 +70,8 @@ When prompted to deploy, type `yes`.
 
 ## Debugging and FAQs
 - **If You Experience Service Account Key Issues You Can List/Delete**:
-  - List Keys: `gcloud iam service-accounts keys list --iam-account <account-id>`
-  - Delete Keys: `gcloud iam service-accounts keys delete <key-id> --iam-account <account-id>`
+  - List Keys: `gcloud iam service-accounts keys list --iam-account <YOURACCOUNTSTRING-compute@developer.gserviceaccount.com>`
+  - Delete Keys: `gcloud iam service-accounts keys delete <key-id> --iam-account <YOURACCOUNTSTRING-compute@developer.gserviceaccount.com>`
 - **Example SSH Key String**: `service_account:ssh-rsa SDqhy5jXUv3xKGhzYJzjALiHg6ZzWKSSrhbjXVAvp6SecWdZPkGw16UhHHTCHvD4bwjnH6NXjHtyuCVqhdDuY1+E1BSdf0G0rncN8qFrzT1imJqraru38UEJRTZFrXMG6Kvx698J[ELvapEXXMv52zW6ZwHuU5aJ0t2atDHEXha7V3UAKSbgxLbbtQGRgtANcz3fvk9ve8GVPEtB3Cyz3eyg4aBHVqLyxx3N9hithMe`
 - **View Server Setup Output**: Check `/var/log/startup_script.log`.
 - **Managing Cloudflared Tunnels When SSHd On Server**:
