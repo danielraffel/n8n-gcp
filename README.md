@@ -1,25 +1,24 @@
 # Automated Configuration of n8n, FastAPI & Cloudflare Tunnel on E2 Free Tier Google Cloud
 
 ## Overview
-This project contains a Python script designed to automate the setup of a free-tier Google Cloud Platform (GCP) [e2 micro-instance](https://cloud.google.com/free/docs/free-cloud-features#compute) with [n8n](https://n8n.io), [FastAPI](https://fastapi.tiangolo.com), and a [Cloudflare tunnel](https://www.cloudflare.com/products/tunnel/). The script uses Terraform to provision infrastructure on GCP. It automates several tasks, including generating a service account key, setting up a static IP, and configuring firewall rules.
+This project contains a Python script designed to automate the setup of a free-tier Google Cloud Platform (GCP) [e2 micro-instance](https://cloud.google.com/free/docs/free-cloud-features#compute) with [n8n](https://n8n.io), [FastAPI](https://fastapi.tiangolo.com), and a [Cloudflare tunnel](https://www.cloudflare.com/products/tunnel/). The script uses Terraform to provision infrastructure on GCP. It automates several tasks, including generating a service account key, setting up a static IP, and installing scripts on the server to assist with installing and updating software.
 
 ### What the Python Script Does:
 1. **Project ID Retrieval**: Fetches your GCP project ID using the Google Cloud CLI.
 2. **Service Account Key Generation**: Creates and downloads a service account key for the default service account.
 3. **Static IP Check/Create**: Checks for an existing static IP or creates a new one.
 4. **Terraform Config Generation**: Creates a Terraform configuration file (`setup.tf`) to set up a GCP instance with necessary configurations.
-5. **Generates Scripts and Configuration Files**: setup_server.sh, setup_cloudflare.sh, docker-compose.yml, and docker-compose.service
+5. **Generates Scripts and Configuration Files**: setup_server.sh, setup_cloudflare.sh, updater.sh, docker-compose.yml, and docker-compose.service
 
 ### What the Terraform File Deploys:
 The Terraform configuration (`setup.tf`) provisions the following on GCP:
 - A new GCP instance with specified configurations e2 machine type, 60gb boot disk, and standard static IP network interfaces.
-- Uploads files to the server: /opt/setup_server.sh, /opt/setup_cloudflare.sh, /opt/docker-compose.yml, and /etc/systemd/system/docker-compose.service
-- A firewall rule to allow traffic on port 5678, needed for n8n (but since most will use Cloudflare Tunnel probably unneccessary.)
+- Uploads files to the server: /opt/setup_server.sh, /opt/setup_cloudflare.sh, /opt/updater.sh, /opt/docker-compose.yml, and /etc/systemd/system/docker-compose.service
 
 ### Server Setup Scripts:
 Two scripts must be run on the server
-1. `setup_server.sh`: Installs Docker, Apache2, wget, n8n, and FastAPI on the GCP instance.
-2. `setup_cloudflare.sh`: Sets up a Cloudflare tunnel for SSL, downloads `cloudflared`, and configures it to route traffic to the n8n service.
+1. `setup_server.sh`: Installs [Docker using their repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository), n8n, and FastAPI on a GCP Ubuntu 22.04 micro-server instance.
+2. `setup_cloudflare.sh`: Sets up a Cloudflare tunnel for SSL, downloads `cloudflared`, and configures it at a subdomain to route traffic to the n8n service.
 
 ## Prerequisites
 - Terraform: [Installation Guide](https://developer.hashicorp.com/terraform/install)
@@ -42,36 +41,64 @@ It will take around 20 minutes to configure the server. Most of the time takes p
 
 ### Step 2: Deployment Steps:
 1. Clone the GitHub repository
-`https://github.com/danielraffel/n8n-gcp.git`
+```
+https://github.com/danielraffel/n8n-gcp.git
+```
 3. Navigate to the local directory in the terminal
-`cd n8n-gcp`
-4. Run the setup script in a terminal
-`python setup.sh`
-5. Initialize Terraform
-`terraform init`
-6. Apply Terraform configuration
-`terraform apply`
+```
+cd n8n-gcp
+```
+5. Run the setup script in a terminal
+```
+python setup.sh
+```
+7. Initialize Terraform
+```
+terraform init
+```
+9. Apply Terraform configuration
+```
+terraform apply
+```
 When prompted to deploy, type `yes`.
 
 ### Step 3: Post-Deployment:
 7. SSH into your server in a terminal:
-`ssh -i ~/.ssh/gcp USERNAME@X.X.X.X`
-8. Install setup scripts on the server (to install and configure Docker, n8n, FastAPI, etc):
-  - `sudo sh /opt/setup_server.sh`
+```
+ssh -i ~/.ssh/gcp USERNAME@X.X.X.X
+```
+8. Install setup scripts on the server (to install and configure Docker, n8n, FastAPI):
+```
+sudo sh /opt/setup_server.sh
+```
+Follow the instructions when prompted to install software that will require additional disk space type `y` (this is the Docker s/w from their repository.)
 9. Install Cloudflare setup scripts on the server to get SSL:
-  - `sudo sh /opt/setup_cloudflare.sh`
-  - Follow the instructions to set up the Cloudflare tunnel. When prompted, copy/paste the URL in a browser and then select the domain you want to tunnel and authorize it. The cert will be downloaded to the server and your DNS name will be updated with the tunnelID.
+```
+sudo sh /opt/setup_cloudflare.sh
+```
+Follow the instructions to set up the Cloudflare tunnel. When prompted, copy/paste the URL in a browser and then select the domain you want to tunnel and authorize it. The cert will be downloaded to the server and your DNS name will be updated with the tunnelID.
 
 ## Cost Considerations
-- The E2 micro instance is under GCP's always-free tier, implying no cost for 24/7 operation. However, always verify with Google's latest policies. Cloudflare Tunnel, FastAPI, n8N are also free to use but verify with their latest policies.
+- The [E2 micro-instance](https://cloud.google.com/free/docs/free-cloud-features#compute) is under GCP's always-free tier, implying no cost for 24/7 operation within their defined limits. However, always verify the latest policies with Google, Cloudflare Tunnel, FastAPI, n8N to verify you understand their latest policies.
 
 ## SSL Setup
-- This script configures SSL using a Cloudflare tunnel.
+- This script configures SSL using a Cloudflare tunnel and will add a subdomain to your DNS nameserver.
+
+## Updating Server Software
+1. SSH into your server in a terminal:
+```
+ssh -i ~/.ssh/gcp USERNAME@X.X.X.X
+```
+3. Run the updater scripts on the server (to upgrade Docker, n8n, FastAPI and Cloudflare Tunnel):
+```
+sudo sh /opt/updater.sh
+```
 
 ## Debugging and FAQs
 - **If You Experience Service Account Key Issues You Can List/Delete**:
   - List Keys: `gcloud iam service-accounts keys list --iam-account <YOURACCOUNTSTRING-compute@developer.gserviceaccount.com>`
   - Delete Keys: `gcloud iam service-accounts keys delete <key-id> --iam-account <YOURACCOUNTSTRING-compute@developer.gserviceaccount.com>`
+  - Note: you can find your IAM account in the file that's generated on your machine called `service-account-key.json`
 - **Example SSH Key String**: `service_account:ssh-rsa SDqhy5jXUv3xKGhzYJzjALiHg6ZzWKSSrhbjXVAvp6SecWdZPkGw16UhHHTCHvD4bwjnH6NXjHtyuCVqhdDuY1+E1BSdf0G0rncN8qFrzT1imJqraru38UEJRTZFrXMG6Kvx698J[ELvapEXXMv52zW6ZwHuU5aJ0t2atDHEXha7V3UAKSbgxLbbtQGRgtANcz3fvk9ve8GVPEtB3Cyz3eyg4aBHVqLyxx3N9hithMe`
 - **View Server Setup Output**: Check `/var/log/startup_script.log`.
 - **Managing Cloudflared Tunnels When SSHd On Server**:
@@ -96,16 +123,12 @@ When prompted to deploy, type `yes`.
 
 ## How to Delete What This Script Creates
 On Google Cloud
-1. [Firewall Policy](https://console.cloud.google.com/net-security/firewall-manager/firewall-policies) : A Firewall policy is created on port 5678. This can be deleted via the Firewall Policies section in GCP.
-2. [VM](https://console.cloud.google.com/compute/instances): A Virtual Machine (VM) is created. This can be deleted via the VM Instances section in GCP.
-3. [Standard Static IP](https://console.cloud.google.com/networking/addresses): A standard static IP is created. This should be released via the External IP addresses section in GCP.
+1. [VM](https://console.cloud.google.com/compute/instances): A Virtual Machine (VM) is created. This can be deleted via the VM Instances section in GCP.
+2. [Standard Static IP](https://console.cloud.google.com/networking/addresses): A standard static IP is created. This should be released via the External IP addresses section in GCP (if a stanard reserved IP is not attached to anything you will be charged so be certain to release it.)
 
 On [Cloudflare](https://cloudflare.com)
 1. Tunnel: A tunnel is created which can be deleted by navigating to Zero Trust > Access > Tunnels in the Cloudflare Dashboard (login required).
 2. Subdomain with Tunnel: A subdomain is created on your chosen domain with a tunnel. This can be deleted by going to your domain's DNS settings at Choose your domain > DNS in the Cloudflare Dashboard (login required) and looking for the CNAME on your Domain.
 
 ## ToDo
-- Add a simple updater script to make it easy to update docker, docker-compose, n8n, etc
-- Comment out opening port 5678 (unnecessary with cloudflare tunnel)
-- Remove apache2 (don't need)
-- Further configure uvicorn-gunicorn-fastapi post installation
+- Configure uvicorn-gunicorn-fastapi post installation
