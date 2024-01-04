@@ -12,7 +12,7 @@ This project contains a Python script designed to automate the setup of a free-t
 
 ### What the Terraform File Deploys:
 The Terraform configuration (`setup.tf`) provisions the following on GCP:
-- A new GCP instance with specified configurations e2 machine type, 60gb boot disk, and standard static IP network interfaces.
+- A new (free) GCP instance consisting of an e2 micro-instance with a 60gb boot disk, and standard static IP network interface.
 - Uploads files to the server: /opt/setup_server.sh, /opt/setup_cloudflare.sh, /opt/updater.sh, /opt/docker-compose.yml, and /etc/systemd/system/docker-compose.service
 
 ### Server Setup Scripts:
