@@ -133,3 +133,4 @@ On [Cloudflare](https://cloudflare.com)
 
 ## ToDo
 - Configure uvicorn-gunicorn-fastapi post installation
+- Update script to run on windows and confirm it runs on linux. Currently, optimized for macOS. Changes should be minimal and limited to platform specific commands.
