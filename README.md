@@ -90,7 +90,7 @@ Follow the instructions to set up the Cloudflare tunnel. When prompted, copy/pas
 ```
 ssh -i ~/.ssh/gcp USERNAME@X.X.X.X
 ```
-3. Run the updater script on the server (to upgrade Docker, n8n, FastAPI and Cloudflare Tunnel):
+2. Run the updater script on the server (to upgrade Docker, n8n, FastAPI and Cloudflare Tunnel):
 ```
 sudo sh /opt/updater.sh
 ```
