@@ -24,7 +24,7 @@ Two scripts must be run on the server
 - Terraform: [Installation Guide](https://developer.hashicorp.com/terraform/install)
 - Google Cloud SDK: [Installation Guide](https://cloud.google.com/sdk/docs/install)
 - Python 3: Confirm its installed on your machine: `python3 --version`
-- SSH Key: [Generate an SSH key for GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+- SSH Key: [Generate an SSH key (how to guide by GitHub)](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
 - Domain with Cloudflare DNS: [Sign up and host a domain](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/) to be able to configure [Cloudflare tunnel](https://www.cloudflare.com/products/tunnel/).
 
 ## Usage
@@ -44,35 +44,36 @@ It will take around 20 minutes to configure the server. Most of the time takes p
 ```
 https://github.com/danielraffel/n8n-gcp.git
 ```
-3. Navigate to the local directory in the terminal
+2. Navigate to the local directory in the terminal
 ```
 cd n8n-gcp
 ```
-5. Run the setup script in a terminal
+3. Run the setup script in a terminal
 ```
 python setup.sh
 ```
-7. Initialize Terraform
+4. Initialize Terraform
 ```
 terraform init
 ```
-9. Apply Terraform configuration
+5. Apply Terraform configuration
 ```
 terraform apply
 ```
 When prompted to deploy, type `yes`.
 
 ### Step 3: Post-Deployment:
-7. SSH into your server in a terminal:
+6. SSH into your server in a terminal:
 ```
 ssh -i ~/.ssh/gcp USERNAME@X.X.X.X
 ```
-8. Install setup scripts on the server (to install and configure Docker, n8n, FastAPI):
+7. Install setup scripts on the server (to install and configure Docker, n8n, FastAPI):
 ```
 sudo sh /opt/setup_server.sh
 ```
 Follow the instructions when prompted to install software that will require additional disk space type `y` (this is the Docker s/w from their repository.)
-9. Install Cloudflare setup scripts on the server to get SSL:
+
+8. Install Cloudflare setup scripts on the server to get SSL:
 ```
 sudo sh /opt/setup_cloudflare.sh
 ```
@@ -89,7 +90,7 @@ Follow the instructions to set up the Cloudflare tunnel. When prompted, copy/pas
 ```
 ssh -i ~/.ssh/gcp USERNAME@X.X.X.X
 ```
-3. Run the updater scripts on the server (to upgrade Docker, n8n, FastAPI and Cloudflare Tunnel):
+3. Run the updater script on the server (to upgrade Docker, n8n, FastAPI and Cloudflare Tunnel):
 ```
 sudo sh /opt/updater.sh
 ```
