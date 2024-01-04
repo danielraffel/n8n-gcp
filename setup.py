@@ -307,6 +307,3 @@ sudo docker compose -f /opt/docker-compose.yml up -d
 
 # Generate Terraform configuration
 generate_terraform_config(project_id, static_ip, credentials_path)
-
-# Generate Terraform configuration
-generate_terraform_config(project_id, static_ip, credentials_path)
