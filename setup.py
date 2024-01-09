@@ -290,7 +290,8 @@ RestartSec=5s
 WantedBy=multi-user.target
 """)
 
-create_file("updater.sh", """# Update the package index
+create_file("updater.sh", """#!/bin/bash
+# Update the package index
 sudo apt update
 # Upgrade Docker and Cloudflared
 sudo apt upgrade docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin cloudflared
