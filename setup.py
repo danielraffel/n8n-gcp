@@ -1,6 +1,8 @@
 import subprocess
 import json
 import os
+import argparse
+import sys
 
 # Global variables
 n8n_hostname = "n8n.YOURDOMAIN.COM" # Required. Example: n8n.generouscorp.com
@@ -10,6 +12,10 @@ region = "us-west1"
 ssh_key = "user_name:ssh-rsa string" # Required. Example: service_account:ssh-rsa SDqhy5jXUv3xKGhzYJzjALiHg6ZzWKSSrhbjXVAvp6SecWdZPkGw16UhHHTCHvD4bwjnH6NXjHtyuCVqhdDuY1+E1BSdf0G0rncN8qFrzT1imJqraru38UEJRTZFrXMG6Kvx698J[ELvapEXXMv52zW6ZwHuU5aJ0t2atDHEXha7V3UAKSbgxLbbtQGRgtANcz3fvk9ve8GVPEtB3Cyz3eyg4aBHVqLyxx3N9hithMe
 ssh_private_key_path = "/Users/danielraffel/.ssh/gcp" # Required. Update to your private key path
 ssh_user = "daniel_raffel" # Required. Update to your SSH key user_name
+
+def main():
+    # Change the working directory to the script's directory
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def fetch_project_id():
     # Fetch project ID using Google Cloud CLI
@@ -45,8 +51,6 @@ def fetch_service_account_key():
         return None
 
     return key_filename
-
-credentials_path = fetch_service_account_key()
 
 def format_hostname(hostname):
     # Format hostname to comply with GCP naming conventions
@@ -87,7 +91,6 @@ def check_static_ip(hostname, region):
 def generate_terraform_config(project_id, static_ip, credentials_path):
     formatted_hostname = format_hostname(n8n_hostname)
 
-    # Terraform configuration with file provisioners, remote-exec provisioner, and connection block
     config = f"""# Terraform configuration for setting up an instance in GCP
 provider "google" {{
     project     = "{project_id}"
@@ -143,8 +146,16 @@ resource "google_compute_instance" "{formatted_hostname}" {{
         source      = "updater.sh"
         destination = "/tmp/updater.sh"
     }}
+    provisioner "file" {{
+        source      = "Dockerfile"
+        destination = "/tmp/Dockerfile"
+    }}
+    provisioner "file" {{
+        source      = "docker-entrypoint.sh"
+        destination = "/tmp/docker-entrypoint.sh"
+    }}
 
-    # Remote-exec provisioner to move files to their final locations
+    # Remote-exec provisioner to move files to their final locations and set permissions
     provisioner "remote-exec" {{
         inline = [
             "sudo mv /tmp/setup_server.sh /opt/setup_server.sh",
@@ -154,6 +165,9 @@ resource "google_compute_instance" "{formatted_hostname}" {{
             "sudo mv /tmp/docker-compose.service /etc/systemd/system/docker-compose.service",
             "sudo mv /tmp/updater.sh /opt/updater.sh",
             "sudo chmod +x /opt/updater.sh",
+            "sudo mv /tmp/Dockerfile /opt/Dockerfile",
+            "sudo mv /tmp/docker-entrypoint.sh /opt/docker-entrypoint.sh",
+            "sudo chmod +x /opt/docker-entrypoint.sh",
         ]
     }}
 }}
@@ -166,61 +180,65 @@ output "instance_ip" {{
     with open("setup.tf", "w") as file:
         file.write(config)
 
-# Fetch project ID
-project_id = fetch_project_id()
-
-# Download service account key and get the path
-credentials_path = fetch_service_account_key()
-
-# Check for an existing static IP or create a new one
-static_ip, formatted_hostname = check_static_ip(n8n_hostname, region)
-
-# Ensure that static_ip and formatted_hostname are valid before proceeding
-if static_ip is None or formatted_hostname is None:
-    print("Error: Unable to obtain static IP or formatted hostname.")
-    exit(1)
-
 def create_file(file_name, content):
-    with open(file_name, "w") as file:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(script_dir, file_name)
+    with open(file_path, "w") as file:
         file.write(content)
 
-# Create setup_server.sh install Docker, n8n, FastAPI
-create_file("setup_server.sh", """#!/bin/bash
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Generate n8n setup files")
+    parser.add_argument("--no-upload", action="store_true", help="Generate files without uploading to GCP")
+    return parser.parse_args()
+
+# Define content for each file
+setup_server_content = """#!/bin/bash
 # Add Docker's official GPG key
 sudo apt-get update
 sudo apt-get install ca-certificates curl gnupg
 sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
 # Add the repository to Apt sources
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
 # Update apt repositories
 sudo apt-get update
+
 # Install Docker
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
 # Start and enable Docker service
 systemctl start docker
 systemctl enable docker
-# Pull Docker images for FastAPI and n8n
+
+# Pull Docker image for FastAPI
 docker pull {fastapi_docker_image}
-docker pull n8nio/n8n
+
 # Change to the working directory
 cd /opt
+
+# Build the custom n8n image
+docker build -t custom-n8n:latest .
+
 # Start Docker Compose
 sudo docker compose up -d
+
 # Enable Docker Compose service
 systemctl enable docker-compose.service
+
 # Create n8n volume directory
 sudo mkdir -p /home/{ssh_user}/n8n-local-files
+
 # Create Data Folders and Docker Volumes
 sudo docker volume create n8n_data
 sudo mkdir -p /home/{ssh_user}/n8n-local-files
-""".format(fastapi_docker_image=fastapi_docker_image, n8n_hostname=n8n_hostname, webhook_url=webhook_url, ssh_user=ssh_user))
+""".format(fastapi_docker_image=fastapi_docker_image, ssh_user=ssh_user)
 
-create_file("setup_cloudflare.sh", """#!/bin/bash
+setup_cloudflare_content = """#!/bin/bash
 # Add cloudflare gpg key
 sudo mkdir -p --mode=0755 /usr/share/keyrings
 curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
@@ -247,22 +265,23 @@ echo "  - service: http_status:404" >> /etc/cloudflared/config.yml
 cloudflared service install
 systemctl start cloudflared
 systemctl status cloudflared
-""".format(formatted_hostname=formatted_hostname, static_ip=static_ip, n8n_hostname=n8n_hostname))
+""".format(formatted_hostname=format_hostname(n8n_hostname), static_ip="<STATIC_IP>", n8n_hostname=n8n_hostname)
 
-# Create docker-compose.yml
-create_file("docker-compose.yml", """version: '3'
+docker_compose_content = """version: '3'
 services:
   n8n:
-    image: n8nio/n8n
+    build: .
+    user: "node"
     ports:
       - "5678:5678"
     environment:
       - N8N_HOST={n8n_hostname}
       - WEBHOOK_URL={webhook_url}
+      - NODE_FUNCTION_ALLOW_EXTERNAL=socket.io,socket.io-client
     restart: unless-stopped
     volumes:
       - n8n_data:/home/node/.n8n
-      - /home/{ssh_user}/n8n-local-files:/files
+      - /home/{ssh_user}/n8n-local-files:/data/files
   fastapi:
     image: {fastapi_docker_image}
     ports:
@@ -270,10 +289,9 @@ services:
     restart: unless-stopped
 volumes:
   n8n_data:
-""".format(ssh_user=ssh_user, fastapi_docker_image=fastapi_docker_image, n8n_hostname=n8n_hostname, webhook_url=webhook_url))
+""".format(ssh_user=ssh_user, fastapi_docker_image=fastapi_docker_image, n8n_hostname=n8n_hostname, webhook_url=webhook_url)
 
-# Create docker-compose.service
-create_file("docker-compose.service", """[Unit]
+docker_compose_service_content = """[Unit]
 Description=Docker Compose Application Service
 Requires=docker.service
 After=docker.service
@@ -288,23 +306,105 @@ RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target
-""")
+"""
 
-create_file("updater.sh", """#!/bin/bash
+updater_content = """#!/bin/bash
 # Update the package index
 sudo apt update
+
 # Upgrade Docker and Cloudflared
 sudo apt upgrade docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin cloudflared
-# Pull latest docker image for FastAPI and n8n
+
+# Pull the latest base image for n8n
+docker pull n8nio/n8n:latest
+
+# Pull the latest docker image for FastAPI
 docker pull {fastapi_docker_image}
-docker pull n8nio/n8n
+
+# Build the custom n8n image based on the latest base image
+docker build -t custom-n8n:latest /opt
+
 # Stop current setup
 sudo docker compose stop
-# Delete docker-containers (data is stored separately)
-sudo docker compose rm
-# Start Docker again
-sudo docker compose -f /opt/docker-compose.yml up -d
-""")
 
-# Generate Terraform configuration
-generate_terraform_config(project_id, static_ip, credentials_path)
+# Delete docker containers (data is stored separately)
+sudo docker compose rm -f
+
+# Start Docker again, using the updated custom image
+sudo docker compose -f /opt/docker-compose.yml up -d --build
+""".format(fastapi_docker_image=fastapi_docker_image)
+
+dockerfile_content = """# Use the n8n base image
+FROM n8nio/n8n:latest
+
+# Switch to root user to install global npm packages
+USER root
+
+# Install socket.io-client globally
+RUN npm install -g socket.io-client
+
+# Switch back to the node user
+USER node
+
+# Set working directory to avoid potential errors
+WORKDIR /data
+
+# Copy the custom entrypoint script to the container
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+
+# Make the entrypoint script executable
+RUN chmod +x /docker-entrypoint.sh
+
+# Use the custom entrypoint script
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
+# Expose the port n8n uses
+EXPOSE 5678
+"""
+
+docker_entrypoint_content = """#!/bin/sh
+
+# Ensure the /data directory and /home/node/.n8n directory exist
+mkdir -p /data /home/node/.n8n
+
+# Ensure the node user owns these directories
+chown -R node:node /data /home/node/.n8n
+
+exec n8n "$@"
+"""
+
+def main():
+    args = parse_arguments()
+
+    if args.no_upload:
+        # Generate client-side template files only
+        create_file("setup_server.sh", setup_server_content)
+        create_file("setup_cloudflare.sh", setup_cloudflare_content)
+        create_file("docker-compose.yml", docker_compose_content)
+        create_file("docker-compose.service", docker_compose_service_content)
+        create_file("updater.sh", updater_content)
+        create_file("Dockerfile", dockerfile_content)
+        create_file("docker-entrypoint.sh", docker_entrypoint_content)
+        print("Client-side template files generated successfully.")
+    else:
+        # Perform full setup including GCP operations
+        project_id = fetch_project_id()
+        credentials_path = fetch_service_account_key()
+        static_ip, formatted_hostname = check_static_ip(n8n_hostname, region)
+
+        if static_ip is None or formatted_hostname is None:
+            print("Error: Unable to obtain static IP or formatted hostname.")
+            sys.exit(1)
+
+        create_file("setup_server.sh", setup_server_content)
+        create_file("setup_cloudflare.sh", setup_cloudflare_content.format(static_ip=static_ip))
+        create_file("docker-compose.yml", docker_compose_content)
+        create_file("docker-compose.service", docker_compose_service_content)
+        create_file("updater.sh", updater_content)
+        create_file("Dockerfile", dockerfile_content)
+        create_file("docker-entrypoint.sh", docker_entrypoint_content)
+        generate_terraform_config(project_id, static_ip, credentials_path)
+        print("All files generated and Terraform configuration created successfully.")
+
+if __name__ == "__main__":
+    main()
