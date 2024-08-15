@@ -13,7 +13,7 @@ This project contains a Python script designed to automate the setup of a free-t
 3. **Static IP Check/Create**: Checks for an existing static IP or creates a new one.
 4. **Terraform Config Generation**: Creates a Terraform configuration file (`setup.tf`) to set up a GCP instance with necessary configurations.
 5. **Generates Scripts and Configuration Files**: `setup_server.sh`, `setup_cloudflare.sh`, `updater.sh`, `docker-compose.yml`, `Dockerfile`, `docker-entrypoint.sh`, and `docker-compose.service`.
-6. **No-Upload Mode**: Allows you to generate all necessary configuration files and scripts without uploading them to the cloud. This feature is useful if you want to preview or modify the generated files before deploying to Google Cloud. You can activate this mode by running the script with the `--no-upload` flag. If you later decide to proceed with the full setup, you will need to run the script from scratch without the `--no-upload` flag to generate and upload the files to Google Cloud.
+6. **No-Upload Mode**: Allows you to generate all necessary configuration files and scripts without uploading them to the cloud. This feature is useful if you want to preview or modify the generated files before deploying to Google Cloud. You can activate this mode by running the script with the `--no-upload` flag eg `python setup.sh --no-upload`. If you later decide to proceed with the full setup, you will need to run the script from scratch without the `--no-upload` flag to generate and upload the files to Google Cloud eg `python setup.sh`.
 
 ### What the Terraform File Deploys:
 The Terraform configuration (`setup.tf`) provisions the following on GCP:
