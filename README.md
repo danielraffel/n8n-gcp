@@ -199,3 +199,5 @@ On [Cloudflare](https://cloudflare.com):
 ## ToDo
 - Configure uvicorn-gunicorn-fastapi post installation.
 - Update script to run on Windows and confirm it runs on Linux. Currently, optimized for macOS. Changes should be minimal and limited to platform-specific commands.
+- Explore running the server side scripts using Terraform.
+- Update the video walkthrough which is now outdated.
