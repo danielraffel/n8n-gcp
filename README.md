@@ -1,5 +1,9 @@
 # Automated Configuration of n8n, FastAPI & Cloudflare Tunnel on E2 Free Tier Google Cloud
 
+**TL;DR** Automate n8n, FastAPI, and Cloudflare Tunnel setup on Google Cloud with a comprehensive Python script that uses Terraform to deploy your customized configuration.
+
+**To jump to the installation instructions,** see the [Prerequisites](#prerequisites) and [Usage](#usage) sections.
+
 ## Overview
 This project contains a Python script designed to automate the setup of a free-tier Google Cloud Platform (GCP) [e2 micro-instance](https://cloud.google.com/free/docs/free-cloud-features#compute) with [n8n](https://n8n.io), [FastAPI](https://fastapi.tiangolo.com), and a [Cloudflare tunnel](https://www.cloudflare.com/products/tunnel/). The script uses Terraform to provision infrastructure on GCP. It automates several tasks, including generating a service account key, setting up a static IP, and installing scripts on the server to assist with installing and updating software.
 
@@ -54,14 +58,14 @@ Two scripts must be run on the server:
 1. `setup_server.sh`: Installs [Docker using their repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository), builds the custom n8n image, and installs FastAPI on a GCP Ubuntu 22.04 micro-server instance.
 2. `setup_cloudflare.sh`: Sets up a Cloudflare tunnel for SSL, downloads `cloudflared`, and configures it at a subdomain to route traffic to the n8n service.
 
-## Prerequisites
+## [Prerequisites](#prerequisites)
 - Terraform: [Installation Guide](https://developer.hashicorp.com/terraform/install)
 - Google Cloud SDK: [Installation Guide](https://cloud.google.com/sdk/docs/install)
 - Python 3: Confirm it's installed on your machine: `python3 --version`
 - SSH Key: [Generate an SSH key (how to guide by GitHub)](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
 - Domain with Cloudflare DNS: [Sign up and host a domain](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/) to be able to configure [Cloudflare tunnel](https://www.cloudflare.com/products/tunnel/).
 
-## Usage
+## [Usage](#usage)
 It will take around 20 minutes to configure the server. Most of the time takes place in step 3 where the scripts are downloading files.
 
 ### Step 1: Personalize Global Variables in the Python Script:
