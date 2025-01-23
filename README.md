@@ -88,7 +88,7 @@ It will take around 20 minutes to configure the server. Most of the time takes p
    ```
 3. Run the setup script in a terminal
    ```bash
-   python setup.sh
+   python setup.py
    ```
 4. Initialize Terraform
    ```bash
