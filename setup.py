@@ -104,7 +104,7 @@ resource "google_compute_instance" "{formatted_hostname}" {{
     boot_disk {{
         initialize_params {{
             image = "ubuntu-os-cloud/ubuntu-2204-lts"
-            size  = 60
+            size  = 30
         }}
     }}
     network_interface {{
