@@ -9,8 +9,8 @@ n8n_hostname = "n8n.YOURDOMAIN.COM" # Required. Example: n8n.generouscorp.com
 webhook_url = f"https://{n8n_hostname}/" # Note: this subdomain is added to your DNS when you configure Cloudflare Tunnnel via setup_cloudflare.sh
 fastapi_docker_image = "tiangolo/uvicorn-gunicorn-fastapi:python3.11"
 region = "us-west1"
-ssh_key = "user_name:ssh-rsa string" # Required. Example: service_account:ssh-rsa SDqhy5jXUv3xKGhzYJzjALiHg6ZzWKSSrhbjXVAvp6SecWdZPkGw16UhHHTCHvD4bwjnH6NXjHtyuCVqhdDuY1+E1BSdf0G0rncN8qFrzT1imJqraru38UEJRTZFrXMG6Kvx698J[ELvapEXXMv52zW6ZwHuU5aJ0t2atDHEXha7V3UAKSbgxLbbtQGRgtANcz3fvk9ve8GVPEtB3Cyz3eyg4aBHVqLyxx3N9hithMe
-ssh_private_key_path = "/Users/danielraffel/.ssh/gcp" # Required. Update to your private key path
+ssh_key = "daniel_raffel:ssh-rsa string" # # Required - form [ssh key user_name]:[ssh type] [ssh public key].  Example: service_account:ssh-rsa SDqhy5jXUv3xKGhzYJzjALiHg6ZzWKSSrhbjXVAvp6SecWdZPkGw16UhHHTCHvD4bwjnH6NXjHtyuCVqhdDuY1+E1BSdf0G0rncN8qFrzT1imJqraru38UEJRTZFrXMG6Kvx698J[ELvapEXXMv52zW6ZwHuU5aJ0t2atDHEXha7V3UAKSbgxLbbtQGRgtANcz3fvk9ve8GVPEtB3Cyz3eyg4aBHVqLyxx3N9hithMe
+ssh_private_key_path = "/Users/danielraffel/.ssh/gcp" # Required. Update to your private key path. On windows use full path (e.g. c:/...) 
 ssh_user = "daniel_raffel" # Required. Update to your SSH key user_name
 enable_swap = True # Optional. Enable swap file creation (recommended for e2-micro instances with 1GB RAM). Set to False to disable.
 swap_size = "2G" # Optional. Swap file size (default: 2G). Only used if enable_swap is True.
@@ -21,12 +21,12 @@ def main():
 
 def fetch_project_id():
     # Fetch project ID using Google Cloud CLI
-    result = subprocess.run(["gcloud", "config", "get-value", "project"], capture_output=True, text=True)
+    result = subprocess.run(["gcloud", "config", "get-value", "project"], capture_output=True, text=True, shell=True) # shell parameter required on Windows
     return result.stdout.strip()
 
 def fetch_service_account_key():
     # Fetch service account details
-    accounts = subprocess.run(["gcloud", "iam", "service-accounts", "list", "--format=json"], capture_output=True, text=True)
+    accounts = subprocess.run(["gcloud", "iam", "service-accounts", "list", "--format=json"], capture_output=True, text=True, shell=True) # shell parameter required on Windows
     accounts_json = json.loads(accounts.stdout)
 
     # Look for the Compute Engine default service account
@@ -44,8 +44,8 @@ def fetch_service_account_key():
     key_filename = f"service-account-key.json"
     create_key_result = subprocess.run(
         ["gcloud", "iam", "service-accounts", "keys", "create", key_filename, "--iam-account", compute_engine_service_account],
-        capture_output=True, text=True
-    )
+        capture_output=True, text=True, shell=True
+    ) # shell parameter required on Windows
 
     if create_key_result.returncode != 0:
         # Handle error in key creation
@@ -61,7 +61,7 @@ def format_hostname(hostname):
 def check_static_ip(hostname, region):
     formatted_hostname = format_hostname(hostname)
     # Check if the static IP exists
-    result = subprocess.run(["gcloud", "compute", "addresses", "list", "--filter=NAME=" + formatted_hostname + " AND region:" + region, "--format=json"], capture_output=True, text=True)
+    result = subprocess.run(["gcloud", "compute", "addresses", "list", "--filter=NAME=" + formatted_hostname + " AND region:" + region, "--format=json"], capture_output=True, text=True, shell=True) # shell parameter required on Windows
     
     if result.returncode != 0:
         # Handle error in listing IPs
@@ -75,13 +75,13 @@ def check_static_ip(hostname, region):
             return address["address"], formatted_hostname
 
     # If no static IP, create one
-    create_result = subprocess.run(["gcloud", "compute", "addresses", "create", formatted_hostname, "--region", region, "--network-tier", "STANDARD"], capture_output=True, text=True)
+    create_result = subprocess.run(["gcloud", "compute", "addresses", "create", formatted_hostname, "--region", region, "--network-tier", "STANDARD"], capture_output=True, text=True, shell=True) # shell parameter required on Windows
     if create_result.returncode != 0:
         # Handle error in creating IP
         print("Error creating static IP:", create_result.stderr)
         return None, None
 
-    new_address_result = subprocess.run(["gcloud", "compute", "addresses", "describe", formatted_hostname, "--region", region, "--format=json"], capture_output=True, text=True)
+    new_address_result = subprocess.run(["gcloud", "compute", "addresses", "describe", formatted_hostname, "--region", region, "--format=json"], capture_output=True, text=True, shell=True) # shell parameter required on Windows
     if new_address_result.returncode != 0:
         # Handle error in describing new IP
         print("Error describing new static IP:", new_address_result.stderr)
@@ -163,6 +163,7 @@ resource "google_compute_instance" "{formatted_hostname}" {{
             "sudo mv /tmp/setup_server.sh /opt/setup_server.sh",
             "sudo chmod +x /opt/setup_server.sh",
             "sudo mv /tmp/setup_cloudflare.sh /opt/setup_cloudflare.sh",
+            "sudo chmod +x /opt/setup_cloudflare.sh",
             "sudo mv /tmp/docker-compose.yml /opt/docker-compose.yml",
             "sudo mv /tmp/docker-compose.service /etc/systemd/system/docker-compose.service",
             "sudo mv /tmp/updater.sh /opt/updater.sh",
@@ -213,6 +214,12 @@ echo "Swap file created and enabled successfully."
 """
 
     return f"""#!/bin/bash
+# sudo required
+if [[ $EUID -ne 0 ]]; then
+    echo "Not gonna! try sudo:"
+    echo "sudo $0 $*"
+    exit 1
+fi
 # Add Docker's official GPG key
 sudo apt-get update
 sudo apt-get install ca-certificates curl gnupg
@@ -264,6 +271,12 @@ def generate_setup_cloudflare_content(static_ip_value):
     """Generate setup_cloudflare.sh content with proper static IP replacement"""
     formatted_hostname = format_hostname(n8n_hostname)
     return f"""#!/bin/bash
+# sudo required
+if [[ $EUID -ne 0 ]]; then
+    echo "Not gonna! try sudo:"
+    echo "sudo $0 $*"
+    exit 1
+fi
 # Add cloudflare gpg key
 sudo mkdir -p --mode=0755 /usr/share/keyrings
 curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
@@ -292,7 +305,7 @@ systemctl start cloudflared
 systemctl status cloudflared
 """
 
-docker_compose_content = """version: '3'
+docker_compose_content = """# version: '3' # obsolete
 services:
   n8n:
     build: .
@@ -334,6 +347,12 @@ WantedBy=multi-user.target
 """
 
 updater_content = """#!/bin/bash
+# sudo required
+if [[ $EUID -ne 0 ]]; then
+    echo "Not gonna! try sudo:"
+    echo "sudo $0 $*"
+    exit 1
+fi
 # Update the package index
 sudo apt update
 
@@ -348,6 +367,9 @@ docker pull {fastapi_docker_image}
 
 # Build the custom n8n image based on the latest base image
 docker build -t custom-n8n:latest /opt
+
+# set working folder to avoid warnings
+cd /opt
 
 # Stop current setup
 sudo docker compose stop

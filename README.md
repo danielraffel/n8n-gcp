@@ -60,16 +60,45 @@ Two scripts must be run on the server:
 2. `setup_cloudflare.sh`: Sets up a Cloudflare tunnel for SSL, downloads `cloudflared`, and configures it at a subdomain to route traffic to the n8n service.
 
 ## [Prerequisites](#prerequisites)
-- Terraform: [Installation Guide](https://developer.hashicorp.com/terraform/install)
-- Google Cloud SDK: [Installation Guide](https://cloud.google.com/sdk/docs/install)
-- Python 3: Confirm it's installed on your machine: `python3 --version`
-- SSH Key: [Generate an SSH key (how to guide by GitHub)](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
-- Domain with Cloudflare DNS: [Sign up and host a domain](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/) to be able to configure [Cloudflare tunnel](https://www.cloudflare.com/products/tunnel/).
+### Terraform
+Terraform [Installation Guide](https://developer.hashicorp.com/terraform/install)
+### Google Cloud SDK
+Google Cloud SDK [Installation Guide](https://cloud.google.com/sdk/docs/install)
+
+You will need an account in GCP, and a project created. For that project, enable the Compute Engine API (which will create a default compute service account). It is also worth having the OS Config and Cloud Resource Manager API enabled so you can monitor in their [console](https://console.cloud.google.com/)
+
+With those ready, ensure you point to the correct account and project using these commands in your shell
+```
+gcloud auth list
+gcloud auth login
+gcloud config set account your-account-name
+
+gcloud projects list
+gcloud config set project your-project-id
+```
+### Python 3
+Confirm it's installed on your machine: `python3 --version`
+### SSH Key
+[Generate an SSH key (how to guide by GitHub)](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent)
+If you follow the guide, when creating the key do not create a passphrase (as the script is not interactive). Also better to avoid an email as in the example, rather go with 'service' or similar as account name.
+### Domain with Cloudflare DNS
+[Sign up and host a domain](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/) to be able to configure [Cloudflare tunnel](https://www.cloudflare.com/products/tunnel/).
 
 ## [Usage](#usage)
 It will take around 20 minutes to configure the server. Most of the time takes place in step 3 where the scripts are downloading files.
 
-### Step 1: Personalize Global Variables in the Python Script:
+### Step 1: Get the Code:
+1. Open a terminal and navigate to a local directory
+2. Clone the GitHub repository
+   ```bash
+   git clone https://github.com/danielraffel/n8n-gcp.git
+   ```
+3. Navigate to the new local directory
+   ```bash
+   cd n8n-gcp
+   ```
+
+### Step 2: Personalize Global Variables in the Python Script:
 - `n8n_hostname`: Required. Set this to your domain (e.g., `n8n.yourdomain.com`).
 - `webhook_url`: Optional. Set this to your webhook URL. (will default to your n8n_hostname)
 - `fastapi_docker_image`: Optional. Choose the FastAPI Docker image version if you prefer a different version.
@@ -80,30 +109,22 @@ It will take around 20 minutes to configure the server. Most of the time takes p
 - `enable_swap`: Optional. Default is `True`. Creates a swap file to prevent out-of-memory issues on e2-micro instances (1GB RAM). Set to `False` to disable.
 - `swap_size`: Optional. Default is `"2G"`. Size of the swap file when `enable_swap` is `True`. Can be adjusted (e.g., `"1G"`, `"4G"`).
 
-### Step 2: Deployment Steps:
-1. Clone the GitHub repository
-   ```bash
-   https://github.com/danielraffel/n8n-gcp.git
-   ```
-2. Navigate to the local directory in the terminal
-   ```bash
-   cd n8n-gcp
-   ```
-3. Run the setup script in a terminal
+### Step 3: Deployment Steps:
+1. Run the setup script in a terminal
    ```bash
    python setup.py
    ```
-4. Initialize Terraform
+2. Initialize Terraform
    ```bash
    terraform init
    ```
-5. Apply Terraform configuration
+3. Apply Terraform configuration
    ```bash
    terraform apply
    ```
    When prompted to deploy, type `yes`.
 
-### Step 3: Post-Deployment:
+### Step 4: Post-Deployment:
 6. SSH into your server in a terminal:
    ```bash
    ssh -i ~/.ssh/gcp USERNAME@X.X.X.X
@@ -118,7 +139,7 @@ It will take around 20 minutes to configure the server. Most of the time takes p
    ```bash
    sudo sh /opt/setup_cloudflare.sh
    ```
-   Follow the instructions to set up the Cloudflare tunnel. When prompted, copy/paste the URL in a browser and then select the domain you want to tunnel and authorize it. The cert will be downloaded to the server and your DNS name will be updated with the tunnelID.
+   Follow the instructions to set up the Cloudflare tunnel. When prompted, copy/paste the URL in a browser and then select the domain you want to tunnel and authorize it. The cert will be downloaded to the server and your DNS name will be updated with the tunnelID. At the end, Ctrl-C to exit to the shell.
 
 ## Cost Considerations
 - The [E2 micro-instance](https://cloud.google.com/free/docs/free-cloud-features#compute) is under GCP's always-free tier, implying no cost for 24/7 operation within their defined limits. However, always verify the latest policies with Google, Cloudflare Tunnel, FastAPI, and n8n to ensure you understand their latest policies.
